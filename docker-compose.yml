@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: yii1-books-app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: books_catalog
+      DB_USER: books_user
+      DB_PASSWORD: books_pass
+      SMSPILOT_API_KEY: ${SMSPILOT_API_KEY:-emulator}
+      SMSPILOT_SENDER: ${SMSPILOT_SENDER:-INFORM}
+      APP_ENV: ${APP_ENV:-dev}
+      YII_DEBUG: ${YII_DEBUG:-1}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: yii1-books-db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: books_catalog
+      MYSQL_USER: books_user
+      MYSQL_PASSWORD: books_pass
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  adminer:
+    image: adminer:4
+    container_name: yii1-books-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+
+volumes:
+  db_data:

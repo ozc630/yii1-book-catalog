@@ -1,0 +1,9 @@
+/vendor/
+/protected/runtime/*
+!/protected/runtime/.gitignore
+/protected/data/*
+!/protected/data/.gitignore
+/docker/mysql/
+.env
+.DS_Store
+.phpunit.result.cache

@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$yiic = __DIR__ . '/vendor/yiisoft/yii/framework/yiic.php';
+$config = __DIR__ . '/protected/config/console.php';
+
+if (!file_exists($yiic)) {
+    fwrite(STDERR, "Dependencies are not installed. Run composer install.\n");
+    exit(1);
+}
+
+require_once $yiic;
