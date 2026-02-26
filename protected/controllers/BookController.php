@@ -23,25 +23,25 @@ class BookController extends Controller
 
     public function actionIndex()
     {
-        $books = Book::model()->with('authors')->findAll(['order' => 't.created_at DESC']);
-        $this->render('index', ['books' => $books]);
+        $this->render('index', $this->getBookService()->getIndexData());
     }
 
     public function actionView($id)
     {
-        $book = $this->loadModel($id);
+        $book = $this->getBookService()->findBookWithAuthorsOrFail((int) $id);
         $this->render('view', ['book' => $book]);
     }
 
     public function actionCreate()
     {
+        $bookService = $this->getBookService();
         $model = new Book();
         $selectedAuthorIds = [];
 
         $bookPost = Yii::app()->request->getPost('Book');
         if ($bookPost !== null) {
             $selectedAuthorIds = (array) Yii::app()->request->getPost('authorIds', []);
-            $model = $this->getBookService()->createWithAuthors($bookPost, $selectedAuthorIds);
+            $model = $bookService->createWithAuthors($bookPost, $selectedAuthorIds);
 
             if (!$model->hasErrors() && !empty($model->id)) {
                 Yii::app()->user->setFlash('success', 'Book created successfully.');
@@ -51,7 +51,7 @@ class BookController extends Controller
         }
 
         $model->authorIds = $selectedAuthorIds;
-        $authors = Author::model()->findAll(['order' => 'name ASC']);
+        $authors = $bookService->getAuthorsForForm();
 
         $this->render('create', [
             'model' => $model,
@@ -62,13 +62,14 @@ class BookController extends Controller
 
     public function actionUpdate($id)
     {
-        $model = $this->loadModel($id);
+        $bookService = $this->getBookService();
+        $model = $bookService->findBookWithAuthorsOrFail((int) $id);
         $selectedAuthorIds = CHtml::listData($model->authors, 'id', 'id');
 
         $bookPost = Yii::app()->request->getPost('Book');
         if ($bookPost !== null) {
             $selectedAuthorIds = (array) Yii::app()->request->getPost('authorIds', []);
-            $model = $this->getBookService()->updateWithAuthors((int) $id, $bookPost, $selectedAuthorIds);
+            $model = $bookService->updateWithAuthors((int) $id, $bookPost, $selectedAuthorIds);
 
             if (!$model->hasErrors()) {
                 Yii::app()->user->setFlash('success', 'Book updated successfully.');
@@ -78,7 +79,7 @@ class BookController extends Controller
         }
 
         $model->authorIds = $selectedAuthorIds;
-        $authors = Author::model()->findAll(['order' => 'name ASC']);
+        $authors = $bookService->getAuthorsForForm();
 
         $this->render('update', [
             'model' => $model,
@@ -89,23 +90,13 @@ class BookController extends Controller
 
     public function actionDelete($id)
     {
-        $model = $this->loadModel($id);
-        $model->delete();
+        $bookService = $this->getBookService();
+        $model = $bookService->findBookWithAuthorsOrFail((int) $id);
+        $bookService->deleteBook($model);
 
         if (Yii::app()->request->getQuery('ajax') === null) {
             $this->redirect(['index']);
         }
-    }
-
-    protected function loadModel($id)
-    {
-        $model = Book::model()->with('authors')->findByPk((int) $id);
-
-        if ($model === null) {
-            throw new CHttpException(404, 'Book not found.');
-        }
-
-        return $model;
     }
 
     protected function getBookService(): BookService

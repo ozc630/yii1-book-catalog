@@ -22,24 +22,19 @@ class ReportController extends Controller
 
     public function actionTopAuthors()
     {
-        $requestedYear = Yii::app()->request->getQuery('year', date('Y'));
-        $year = (int) $requestedYear;
+        $reportData = $this->getReportService()->buildTopAuthorsViewData(
+            Yii::app()->request->getQuery('year')
+        );
 
-        $minYear = 1450;
-        $maxYear = (int) date('Y') + 1;
-
-        if ($year < $minYear || $year > $maxYear) {
-            Yii::app()->user->setFlash('error', sprintf('Year must be between %d and %d.', $minYear, $maxYear));
-            $year = (int) date('Y');
+        if ($reportData['errorMessage'] !== null) {
+            Yii::app()->user->setFlash('error', $reportData['errorMessage']);
         }
 
-        $rows = $this->getReportService()->topAuthorsByYear($year, 10);
-
         $this->render('topAuthors', [
-            'year' => $year,
-            'rows' => $rows,
-            'minYear' => $minYear,
-            'maxYear' => $maxYear,
+            'year' => $reportData['year'],
+            'rows' => $reportData['rows'],
+            'minYear' => $reportData['minYear'],
+            'maxYear' => $reportData['maxYear'],
         ]);
     }
 

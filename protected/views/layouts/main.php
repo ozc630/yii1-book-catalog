@@ -150,6 +150,45 @@
             font-weight: 600;
         }
 
+        .yiiPager {
+            list-style: none;
+            margin: 16px 0 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .yiiPager li {
+            margin: 0;
+        }
+
+        .yiiPager a,
+        .yiiPager span {
+            display: inline-block;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #1f2937;
+            background: #fff;
+        }
+
+        .yiiPager a:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+        }
+
+        .yiiPager .selected span {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .yiiPager .hidden {
+            display: none;
+        }
+
         .flash-success,
         .flash-error,
         .flash-info {

@@ -3,7 +3,12 @@
 <?php echo CHtml::beginForm(['/report/topAuthors'], 'get'); ?>
     <div class="field">
         <label for="year">Year (<?php echo (int) $minYear; ?> - <?php echo (int) $maxYear; ?>)</label>
-        <?php echo CHtml::textField('year', $year, ['id' => 'year', 'maxlength' => 4]); ?>
+        <?php echo CHtml::textField('year', $year, [
+            'id' => 'year',
+            'maxlength' => 4,
+            'pattern' => '\d{4}',
+            'inputmode' => 'numeric',
+        ]); ?>
         <?php echo CHtml::submitButton('Show', ['class' => 'btn']); ?>
     </div>
 <?php echo CHtml::endForm(); ?>

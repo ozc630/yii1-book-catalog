@@ -2,6 +2,8 @@
 
 class BookService
 {
+    public const DEFAULT_INDEX_PAGE_SIZE = 10;
+
     private $db;
     private $subscriptionNotifier;
 
@@ -9,6 +11,39 @@ class BookService
     {
         $this->db = $db ?: Yii::app()->db;
         $this->subscriptionNotifier = $subscriptionNotifier ?: new SubscriptionNotifier();
+    }
+
+    public function getIndexData(int $pageSize = self::DEFAULT_INDEX_PAGE_SIZE): array
+    {
+        $criteria = $this->buildIndexCriteria();
+        $pages = new CPagination((int) Book::model()->count());
+        $pages->pageSize = max(1, (int) $pageSize);
+        $pages->applyLimit($criteria);
+
+        return [
+            'books' => $this->findBooksForIndex($criteria),
+            'pages' => $pages,
+        ];
+    }
+
+    public function getAuthorsForForm(): array
+    {
+        return Author::model()->findAll(['order' => 'name ASC']);
+    }
+
+    public function findBookWithAuthorsOrFail(int $bookId): Book
+    {
+        $book = Book::model()->with('authors')->findByPk($bookId);
+        if ($book === null) {
+            throw new CHttpException(404, 'Book not found.');
+        }
+
+        return $book;
+    }
+
+    public function deleteBook(Book $book): void
+    {
+        $book->delete();
     }
 
     public function createWithAuthors(array $bookData, array $authorIds)
@@ -151,5 +186,18 @@ class BookService
         }
 
         return array_values(array_unique($normalized));
+    }
+
+    private function buildIndexCriteria(): CDbCriteria
+    {
+        $criteria = new CDbCriteria();
+        $criteria->order = 't.created_at DESC';
+
+        return $criteria;
+    }
+
+    private function findBooksForIndex(CDbCriteria $criteria): array
+    {
+        return Book::model()->with('authors')->findAll($criteria);
     }
 }

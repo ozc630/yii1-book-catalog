@@ -47,4 +47,8 @@
         <?php endforeach; ?>
         </tbody>
     </table>
+
+    <?php if (isset($pages) && $pages->pageCount > 1): ?>
+        <?php $this->widget('CLinkPager', ['pages' => $pages]); ?>
+    <?php endif; ?>
 <?php endif; ?>
